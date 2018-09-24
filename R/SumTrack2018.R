@@ -382,8 +382,8 @@ p1 <- ggplot(dat4, aes(Place, track_time)) +
             subtitle = dtvar)
 p_list[[evt]] <- p1
 }
-# write.csv(track_res, "C:/Users/Packr1/Documents/Personal/Track/track_res_2018.csv", row.names = FALSE)
-track_res <- read_csv('C:/Users/Packr1/Documents/Personal/Track/track_res_2018.csv') %>%
+# write.csv(track_res, "C:/Users/Packr1/Documents/Personal/Track/godiva_summer_track_res_2018.csv", row.names = FALSE)
+track_res <- read_csv('C:/Users/Packr1/Documents/Personal/Track/godiva_summer_track_res_2018.csv') %>%
             # Adding a bit of distance for Walks, to differentiate
             # in join with the age-graded tables
             mutate(dist_m = case_when(

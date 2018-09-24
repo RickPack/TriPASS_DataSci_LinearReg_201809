@@ -9,6 +9,8 @@ Topic
 Co-presentation with Kevin Feasel (linear regression). R code for regression of Carolina Godiva Summer Track Series (2018) data.
 
 ``` r
+# Produced from 2018 results websites 
+# see SumTrack2018.R in the R subfolder
 track_res <- read_csv('godiva_summer_track_res_2018.csv')
 ```
 
@@ -77,16 +79,18 @@ track_res <- track_res %>% group_by(Name) %>% arrange(Name, Date_Meet, ct_evt) %
                ungroup()
 
 all_dates <- sort(unique(track_res$Date_Meet))
-weather_2018_ht <- read_html('https://www.carolinagodiva.org/index.php?page=track-season-weather-conditions')
-temps_2018      <- weather_2018_ht %>% html_nodes(xpath="//tr[(((count(preceding-sibling::*) + 1) = 12) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 11) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 10) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 9) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 8) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 7) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 6) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 5) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 4) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 3) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span") %>% 
-    html_text() %>%
-    as.numeric() %>%
-    data.frame() %>%
-    # Season averages of somehow been pulled in, so removing rows exceeding the count of 
-    # Summer Track Series dates
-    slice(1:length(all_dates))
-colnames(temps_2018) <- 'Temp'
-temps_2018$Date_Meet <- all_dates    
+# downloaded from 'https://www.carolinagodiva.org/index.php?page=track-season-weather-conditions')
+# see SumTrack2018.R in the R subfolder
+temps_2018      <- read_csv("temps_2018.csv")
+```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   Temp = col_integer(),
+    ##   Date_Meet = col_date(format = "")
+    ## )
+
+``` r
 track_res <- left_join(track_res, temps_2018, by = 'Date_Meet')
 
 track_res %>% dplyr::filter(Name=='Rick Pack' & Date_Meet==ymd('2018-08-01'))
@@ -102,7 +106,7 @@ track_res %>% dplyr::filter(Name=='Rick Pack' & Date_Meet==ymd('2018-08-01'))
     ## 1 200          200     2              4 2018-08-01 Age 35 - 39       21
     ## 2 800          800     1              5 2018-08-01 Age 35 - 39       22
     ##   EventDay DistNum  Temp
-    ##      <int>   <int> <dbl>
+    ##      <int>   <int> <int>
     ## 1        1       1    80
     ## 2        2       1    80
 
@@ -158,7 +162,7 @@ track_res_base[c(3, 20, 27), ]
 
     ## # A tibble: 3 x 8
     ##   Sex_num   Age dist_m track_time DistNum EventNum EventDay  Temp
-    ##     <dbl> <int>  <int>      <dbl>   <int>    <int>    <int> <dbl>
+    ##     <dbl> <int>  <int>      <dbl>   <int>    <int>    <int> <int>
     ## 1       1    42     NA        790       1        3        3    76
     ## 2       1    44     NA        260       1        1        1    75
     ## 3       1    44     NA       1529       1        8        5    80
@@ -197,3 +201,5 @@ lattice::xyplot(track_time ~ Predicted, track_res_base_complete, auto.key = TRUE
 ![](README_files/figure-markdown_github/plot2-1.png)
 
 #### We need to pursue more adjustments, such as developing separate models for shorter events (lower track\_time) vs. longer events, dropping insignificant predictors, and possibly a different kind of model than a linear one.
+
+![Assumptions caution from statistician Frank Harrell](assumptions_frank_harrell.jpg)

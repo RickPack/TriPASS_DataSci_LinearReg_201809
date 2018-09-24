@@ -20,6 +20,8 @@ library(stringr)
 Co-presentation with Kevin Feasel (linear regression). R code for regression of Carolina Godiva Summer Track Series (2018) data.
 
 ```{r trackres}
+# Produced from 2018 results websites 
+# see SumTrack2018.R in the R subfolder
 track_res <- read_csv('godiva_summer_track_res_2018.csv')
 track_res %>% 
     # Differentiate walking events wit a bit of added distance
@@ -41,16 +43,9 @@ track_res <- track_res %>% group_by(Name) %>% arrange(Name, Date_Meet, ct_evt) %
                ungroup()
 
 all_dates <- sort(unique(track_res$Date_Meet))
-weather_2018_ht <- read_html('https://www.carolinagodiva.org/index.php?page=track-season-weather-conditions')
-temps_2018      <- weather_2018_ht %>% html_nodes(xpath="//tr[(((count(preceding-sibling::*) + 1) = 12) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 11) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 10) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 9) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 8) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 7) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 6) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 5) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 4) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 3) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span") %>% 
-    html_text() %>%
-    as.numeric() %>%
-    data.frame() %>%
-    # Season averages of somehow been pulled in, so removing rows exceeding the count of 
-    # Summer Track Series dates
-    slice(1:length(all_dates))
-colnames(temps_2018) <- 'Temp'
-temps_2018$Date_Meet <- all_dates    
+# downloaded from 'https://www.carolinagodiva.org/index.php?page=track-season-weather-conditions')
+# see SumTrack2018.R in the R subfolder
+temps_2018      <- read_csv("temps_2018.csv")
 track_res <- left_join(track_res, temps_2018, by = 'Date_Meet')
 
 track_res %>% dplyr::filter(Name=='Rick Pack' & Date_Meet==ymd('2018-08-01'))
@@ -84,3 +79,4 @@ lattice::xyplot(track_time ~ Predicted, track_res_base_complete, auto.key = TRUE
 ```
 
 #### We need to pursue more adjustments, such as developing separate models for shorter events (lower track_time) vs. longer events, dropping insignificant predictors, and possibly a different kind of model than a linear one.
+![Assumptions caution from statistician Frank Harrell](assumptions_frank_harrell.jpg)
