@@ -1,0 +1,86 @@
+---
+title: Linear Regression for TriPASS Data Sci 20180925 Meetup
+author: "Rick Pack"
+date: "September 24, 2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rvest)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(stringr)
+```
+
+## Topic
+
+Co-presentation with Kevin Feasel (linear regression). R code for regression of Carolina Godiva Summer Track Series (2018) data.
+
+```{r trackres}
+track_res <- read_csv('godiva_summer_track_res_2018.csv')
+track_res %>% 
+    # Differentiate walking events wit a bit of added distance
+    mutate(dist_m = case_when(
+                grepl("WALK", toupper(Event)) ~ as.integer(dist_m + 0.11),
+                TRUE ~ dist_m)) %>%
+    group_by(Name, Sex, Event, Date_Meet) %>% 
+    summarise(ct = n()) %>% dplyr::filter(ct > 1)
+# Example of name appearing errantly more than once for same event / day
+track_res %>% dplyr::filter(str_trim(Name) == 'Brendan Murray' & str_trim(toupper(Event)) == '5K RUN')
+track_res <- track_res %>% dplyr::filter(!is.na(Age)) %>%
+    distinct(Name, Sex, Event, Date_Meet, .keep_all = TRUE)
+track_res <- track_res %>% group_by(Name) %>% arrange(Name, Date_Meet, ct_evt) %>%
+               mutate(EventNum = row_number()) %>% 
+               group_by(Name, Date_Meet) %>%
+               mutate(EventDay = row_number()) %>%
+               group_by(Name, dist_m, Date_Meet) %>%
+               mutate(DistNum = row_number()) %>%
+               ungroup()
+
+all_dates <- sort(unique(track_res$Date_Meet))
+weather_2018_ht <- read_html('https://www.carolinagodiva.org/index.php?page=track-season-weather-conditions')
+temps_2018      <- weather_2018_ht %>% html_nodes(xpath="//tr[(((count(preceding-sibling::*) + 1) = 12) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 11) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 10) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 9) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 8) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 7) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 6) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 5) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 4) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 3) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span") %>% 
+    html_text() %>%
+    as.numeric() %>%
+    data.frame() %>%
+    # Season averages of somehow been pulled in, so removing rows exceeding the count of 
+    # Summer Track Series dates
+    slice(1:length(all_dates))
+colnames(temps_2018) <- 'Temp'
+temps_2018$Date_Meet <- all_dates    
+track_res <- left_join(track_res, temps_2018, by = 'Date_Meet')
+
+track_res %>% dplyr::filter(Name=='Rick Pack' & Date_Meet==ymd('2018-08-01'))
+
+track_res_base <- track_res %>% 
+    mutate(Sex_num = case_when(
+        Sex == "M" ~ 0,
+        Sex == "F" ~ 1)) %>%
+    select(Sex_num, Age, dist_m, track_time, DistNum, EventNum, EventDay, Temp)
+track_lm <- lm(track_time ~ . , track_res_base)
+summary(track_lm)
+# What rows have missing data given lm reported 246 'observations deleted due to missingness'?
+which(! complete.cases(track_res_base))
+track_res_base[c(3, 20, 27), ]
+
+track_res_base_complete <- data.frame(track_res_base[complete.cases(track_res_base),])
+track_res_base_complete$Predicted <- fitted(track_lm)
+head(track_res_base_complete %>% select(Age, dist_m, track_time, Predicted))
+```
+
+## Flawed model, let's look at plots (the usual first step)
+P-value for intercept is significant, suggests model is flawed
+
+```{r plot1}
+plot(track_res_base)
+```
+
+### No variable looks linear to the response variable track_time (column 4) but the combination of explanatory parameters could be.
+```{r plot2}
+lattice::xyplot(track_time ~ Predicted, track_res_base_complete, auto.key = TRUE)
+```
+
+#### We need to pursue more adjustments, such as developing separate models for shorter events (lower track_time) vs. longer events, dropping insignificant predictors, and possibly a different kind of model than a linear one.
