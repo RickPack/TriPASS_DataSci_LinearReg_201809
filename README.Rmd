@@ -73,7 +73,7 @@ P-value for intercept is significant, suggests model is flawed
 plot(track_res_base)
 ```
 
-### No variable looks linear to the response variable track_time (column 4) but the combination of explanatory parameters could be.
+### No variable looks linear to the response variable track_time (column 4) but the combination of explanatory parameters (coefficients * explanatory variables) could be.
 ```{r plot2}
 lattice::xyplot(track_time ~ Predicted, track_res_base_complete, type = c("p","r"), col.line = "red")
 ```

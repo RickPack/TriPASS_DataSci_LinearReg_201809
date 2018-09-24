@@ -192,14 +192,14 @@ plot(track_res_base)
 
 ![](README_files/figure-markdown_github/plot1-1.png)
 
-### No variable looks linear to the response variable track\_time (column 4) but the combination of explanatory parameters could be.
+### No variable looks linear to the response variable track\_time (column 4) but the combination of explanatory parameters (coefficients \* explanatory variables) could be.
 
 ``` r
-lattice::xyplot(track_time ~ Predicted, track_res_base_complete, auto.key = TRUE)
+lattice::xyplot(track_time ~ Predicted, track_res_base_complete, type = c("p","r"), col.line = "red")
 ```
 
 ![](README_files/figure-markdown_github/plot2-1.png)
 
-#### We need to pursue more adjustments, such as developing separate models for shorter events (lower track\_time) vs. longer events, dropping insignificant predictors, and possibly a different kind of model than a linear one.
+#### We need to pursue more adjustments, such as developing separate models for shorter events (lower track\_time) vs. longer events, dropping insignificant predictors, and possibly a different kind of model than a linear one. Of course, this also illustrates the importance of checking the statistical assumptions first.
 
 ![Assumptions caution from statistician Frank Harrell](assumptions_frank_harrell.jpg)
