@@ -1,11 +1,9 @@
----
-title: Produce CSV with 2018 Summer Track Series results
-author: "Rick Pack"
-date: "September 24, 2018"
-output: github_document
----
+Produce CSV with 2018 Summer Track Series results
+================
+Rick Pack
+September 24, 2018
 
-```{r, Segment 1, fig.width = 10, fig.height = 4.5, fig.align = 'center', message = FALSE}
+``` r
 # World Masters Athletics (WMA) Age-graded track tables can be found on
 # Howard Grubb's website:
 # http://www.howardgrubb.co.uk/athletics/data/wavacalc06.xls
@@ -36,6 +34,11 @@ WMA_Women <- read_xls('C:/Users/Packr1/Documents/Personal/Track/wavacalc06.xls',
                 dplyr::filter(`dist(km)_2` > 0 & 
                                 !grepl('Road', Event))
 print(nrow(WMA_Women) - nrow(WMA_Women %>% distinct(Event, dist_m)))
+```
+
+    ## [1] 0
+
+``` r
 message("Expecting 0 so no duplicate distance")
 
 WMA_Men   <- read_xls('C:/Users/Packr1/Documents/Personal/Track/wavacalc06.xls', sheet = 2) %>%
@@ -395,12 +398,99 @@ p1 <- ggplot(dat4, aes(Place, track_time)) +
             subtitle = dtvar)
 p_list[[evt]] <- p1
 }
+```
 
+    ## [1] "1 : 2018-05-30"
+
+    ## Warning in eval_bare(f[[3]], env): NAs introduced by coercion
+
+    ## Warning in evalq(as.numeric(Age), <environment>): NAs introduced by
+    ## coercion
+
+    ## [1] "2 : 2018-06-06"
+
+    ## Warning in eval_bare(f[[3]], env): NAs introduced by coercion
+
+    ## [1] "3 : 2018-06-13"
+
+    ## Warning in eval_bare(f[[3]], env): NAs introduced by coercion
+
+    ## [1] "4 : 2018-06-20"
+    ## [1] "5 : 2018-06-27"
+
+    ## Warning in eval_bare(f[[3]], env): NAs introduced by coercion
+
+    ## [1] "6 : 2018-07-04"
+
+    ## Warning in evalq(as.numeric(Age), <environment>): NAs introduced by
+    ## coercion
+
+    ## [1] "7 : 2018-07-11"
+
+    ## Warning in eval_bare(f[[3]], env): NAs introduced by coercion
+
+    ## [1] "8 : 2018-07-18"
+
+    ## Warning in eval_bare(f[[3]], env): NAs introduced by coercion
+
+    ## Warning in evalq(as.numeric(Age), <environment>): NAs introduced by
+    ## coercion
+
+    ## [1] "9 : 2018-07-25"
+
+    ## Warning in eval_bare(f[[3]], env): NAs introduced by coercion
+
+    ## [1] "10 : 2018-08-01"
+
+    ## Warning in eval_bare(f[[3]], env): NAs introduced by coercion
+
+``` r
 print(track_res %>% distinct(Event, dist_m) %>% arrange(dist_m))
+```
 
+    ##               Event  dist_m
+    ## 1             100 M  100.00
+    ## 2         100 M Run  100.00
+    ## 3     200 Meter Run  200.00
+    ## 4         200 M Run  200.00
+    ## 5       200.2 M Run  200.00
+    ## 6         400 M Run  400.00
+    ## 7             400 M  400.00
+    ## 8         800 M Run  800.00
+    ## 9            1K Run 1000.00
+    ## 10       1500 M Run 1500.00
+    ## 11           1500 M 1500.00
+    ## 12 1500 M Race Walk 1500.11
+    ## 13  1500 M Racewalk 1500.11
+    ## 14         Mile Run 1609.00
+    ## 15       1 Mile Run 1609.00
+    ## 16    Mile Racewalk 1609.11
+    ## 17  1 Mile Racewalk 1609.11
+    ## 18  1998 M Racewalk 1998.11
+    ## 19           3K Run 3000.00
+    ## 20          3 K Run 3000.00
+    ## 21           5K Run 5000.00
+
+``` r
 track_res %>% group_by(Name, Sex, dist_m, Event, Date_Meet) %>% 
     mutate(ct = n()) %>% dplyr::filter(ct > 1) %>% ungroup()
+```
 
+    ## # A tibble: 4 x 15
+    ##   Name            Sex     Age Time  ct_evt Event  mins  secs  track_time
+    ##   <chr>           <chr> <dbl> <chr>  <dbl> <chr>  <chr> <chr>      <dbl>
+    ## 1 Brendan Murray  M        30 19:33   5000 5K Run 19    33          1173
+    ## 2 Brendan Murray  M        30 19:33   5000 5K Run 19    33          1173
+    ## 3 Jonathan Crouse M        13 22:13   5000 5K Run 22    13          1333
+    ## 4 Jonathan Crouse M        13 22:13   5000 5K Run 22    13          1333
+    ##   temp_dist dist_m0 dist_m Date_Meet  agegrp         ct
+    ##   <chr>       <dbl>  <dbl> <date>     <chr>       <int>
+    ## 1 5K           5000   5000 2018-05-30 Age 30 - 34     2
+    ## 2 5K           5000   5000 2018-05-30 Age 30 - 34     2
+    ## 3 5K           5000   5000 2018-07-11 Age < 30        2
+    ## 4 5K           5000   5000 2018-07-11 Age < 30        2
+
+``` r
 track_res2 <- track_res %>% group_by(Name, Sex, dist_m, Event, Date_Meet) %>% 
              mutate(rownum = row_number()) %>% 
              ungroup() %>%
@@ -418,7 +508,11 @@ track_res2 <- track_res %>% group_by(Name, Sex, dist_m, Event, Date_Meet) %>%
             ungroup()
 message("expecting 0")
 nrow(track_res2) - nrow(track_res %>% distinct(Name, Sex, Event, Date_Meet, .keep_all = TRUE))
+```
 
+    ## [1] 0
+
+``` r
 # write.csv(track_res2, "godiva_summer_track_res_2018.csv", row.names = FALSE)
 # track_res2 <- read_csv("godiva_summer_track_res_2018.csv")
 track_res2 %>%
@@ -427,17 +521,137 @@ track_res2 %>%
     select(Name, Sex, Age, Date_Meet, Event, dist_m, ct_evt, Date_Meet, Max_Hamlyn_pts) %>%
     dplyr::filter(Max_Hamlyn_pts > 0) %>%
     print(tbl_df(.), n = nrow(track_res))
+```
 
+    ## # A tibble: 13 x 8
+    ##    Name           Sex     Age Date_Meet  Event            dist_m ct_evt
+    ##    <chr>          <chr> <dbl> <date>     <chr>             <dbl>  <dbl>
+    ##  1 Leif Rasmussen M        15 2018-05-30 Mile Racewalk     1609.   3000
+    ##  2 Leif Rasmussen M        15 2018-06-06 1500 M Race Walk  1500.   3000
+    ##  3 Leif Rasmussen M        15 2018-06-13 Mile Racewalk     1609.   3000
+    ##  4 Leif Rasmussen M        15 2018-06-20 100 M              100    2000
+    ##  5 Leif Rasmussen M        15 2018-06-20 1500 M Racewalk   1500.   3000
+    ##  6 Leif Rasmussen M        15 2018-06-20 400 M              400    4000
+    ##  7 Leif Rasmussen M        15 2018-06-27 Mile Racewalk     1609.   3000
+    ##  8 Leif Rasmussen M        15 2018-07-18 1500 M Run        1500    1000
+    ##  9 Leif Rasmussen M        15 2018-07-18 100 M Run          100    2000
+    ## 10 Leif Rasmussen M        15 2018-07-18 1500 M Racewalk   1500.   3000
+    ## 11 Leif Rasmussen M        15 2018-07-25 1K Run            1000    1000
+    ## 12 Leif Rasmussen M        15 2018-08-01 1 Mile Run        1609    1000
+    ## 13 Leif Rasmussen M        15 2018-08-01 1 Mile Racewalk   1609.   3000
+    ##    Max_Hamlyn_pts
+    ##             <dbl>
+    ##  1              3
+    ##  2              5
+    ##  3              2
+    ##  4              3
+    ##  5              5
+    ##  6              2
+    ##  7              5
+    ##  8              3
+    ##  9              2
+    ## 10              5
+    ## 11              4
+    ## 12              4
+    ## 13              5
+
+``` r
 milecheck <- track_res2 %>% 
     dplyr::filter(Date_Meet == ymd('2018-08-01') & grepl("1", Event)) %>% 
     arrange(dist_m, Event) %>% 
     dplyr::filter(Max_Hamlyn_pts > 0 )
 print(milecheck, n = nrow(milecheck))
+```
 
+    ## # A tibble: 22 x 17
+    ##    Name              Sex     Age Time  ct_evt Event           mins  secs 
+    ##    <chr>             <chr> <dbl> <chr>  <dbl> <chr>           <chr> <chr>
+    ##  1 Brendan Murray    M        30 5:22    1000 1 Mile Run      5     22   
+    ##  2 Leif Rasmussen    M        15 5:31    1000 1 Mile Run      5     31   
+    ##  3 Ted Richardson    M        48 5:45    1000 1 Mile Run      5     45   
+    ##  4 Michael Fields    M        26 5:49    1000 1 Mile Run      5     49   
+    ##  5 Nicholas Min      M        15 5:50    1000 1 Mile Run      5     50   
+    ##  6 Kevin Nickodem    M        61 5:50    1000 1 Mile Run      5     50   
+    ##  7 Brian Stull       M        47 5:50    1000 1 Mile Run      5     50   
+    ##  8 Roxanne Springer  F        54 6:17    1000 1 Mile Run      6     17   
+    ##  9 Kaina Morey       F        17 6:19    1000 1 Mile Run      6     19   
+    ## 10 Robin Richardson  F        48 6:34    1000 1 Mile Run      6     34   
+    ## 11 Amy Cummings      F        44 7:25    1000 1 Mile Run      7     25   
+    ## 12 Amy Lowman        F        41 7:36    1000 1 Mile Run      7     36   
+    ## 13 Leif Rasmussen    M        15 9:40    3000 1 Mile Racewalk 9     40   
+    ## 14 Roxanne Springer  F        54 9:42    3000 1 Mile Racewalk 9     42   
+    ## 15 Deb Springer      F        44 10:26   3000 1 Mile Racewalk 10    26   
+    ## 16 John Min          M        48 11:01   3000 1 Mile Racewalk 11    01   
+    ## 17 Tim O'Brien       M        66 11:06   3000 1 Mile Racewalk 11    06   
+    ## 18 Isaac Mathias     M        14 11:17   3000 1 Mile Racewalk 11    17   
+    ## 19 Barbara Hindenach F        67 11:22   3000 1 Mile Racewalk 11    22   
+    ## 20 Kaina Morey       F        17 11:42   3000 1 Mile Racewalk 11    42   
+    ## 21 Brendan Murray    M        30 11:45   3000 1 Mile Racewalk 11    45   
+    ## 22 Robin Richardson  F        48 12:07   3000 1 Mile Racewalk 12    07   
+    ##    track_time temp_dist dist_m0 dist_m Date_Meet  agegrp      rownum Place
+    ##         <dbl> <chr>       <dbl>  <dbl> <date>     <chr>        <int> <int>
+    ##  1        322 1            1609  1609  2018-08-01 Age 30 - 34      1     1
+    ##  2        331 1            1609  1609  2018-08-01 Age < 30         1     2
+    ##  3        345 1            1609  1609  2018-08-01 Age 45 - 50      1     3
+    ##  4        349 1            1609  1609  2018-08-01 Age < 30         1     4
+    ##  5        350 1            1609  1609  2018-08-01 Age < 30         1     5
+    ##  6        350 1            1609  1609  2018-08-01 Age 61 - 64      1     5
+    ##  7        350 1            1609  1609  2018-08-01 Age 45 - 50      1     5
+    ##  8        377 1            1609  1609  2018-08-01 Age 51 - 55      1     1
+    ##  9        379 1            1609  1609  2018-08-01 Age < 30         1     2
+    ## 10        394 1            1609  1609  2018-08-01 Age 45 - 50      1     3
+    ## 11        445 1            1609  1609  2018-08-01 Age 40 - 44      1     4
+    ## 12        456 1            1609  1609  2018-08-01 Age 40 - 44      1     5
+    ## 13        580 1            1609  1609. 2018-08-01 Age < 30         1     1
+    ## 14        582 1            1609  1609. 2018-08-01 Age 51 - 55      1     1
+    ## 15        626 1            1609  1609. 2018-08-01 Age 40 - 44      1     2
+    ## 16        661 1            1609  1609. 2018-08-01 Age 45 - 50      1     2
+    ## 17        666 1            1609  1609. 2018-08-01 Age 65 - 69      1     3
+    ## 18        677 1            1609  1609. 2018-08-01 Age < 30         1     4
+    ## 19        682 1            1609  1609. 2018-08-01 Age 65 - 69      1     3
+    ## 20        702 1            1609  1609. 2018-08-01 Age < 30         1     4
+    ## 21        705 1            1609  1609. 2018-08-01 Age 30 - 34      1     5
+    ## 22        727 1            1609  1609. 2018-08-01 Age 45 - 50      1     5
+    ##    Max_Hamlyn_pts
+    ##             <dbl>
+    ##  1              5
+    ##  2              4
+    ##  3              3
+    ##  4              2
+    ##  5              1
+    ##  6              1
+    ##  7              1
+    ##  8              5
+    ##  9              4
+    ## 10              3
+    ## 11              2
+    ## 12              1
+    ## 13              5
+    ## 14              5
+    ## 15              4
+    ## 16              4
+    ## 17              3
+    ## 18              2
+    ## 19              3
+    ## 20              2
+    ## 21              1
+    ## 22              1
+
+``` r
 track_res_noage <- track_res2 %>% 
                      # Age-graded track tables start at age 4
                      dplyr::filter(is.na(Age) | Age <= 4)
 track_res_noage %>% janitor::tabyl(Age)
+```
+
+    ##  Age  n    percent valid_percent
+    ##    0  6 0.20689655    0.31578947
+    ##    2  1 0.03448276    0.05263158
+    ##    3  2 0.06896552    0.10526316
+    ##    4 10 0.34482759    0.52631579
+    ##   NA 10 0.34482759            NA
+
+``` r
 track_res_age   <- anti_join(track_res2, track_res_noage %>% select(Name, Sex, Event, Date_Meet), 
                              by = c('Name', 'Sex', 'Event', 'Date_Meet'))
 
@@ -500,10 +714,22 @@ track_res_ind_age <- track_res_all %>%
     ungroup()
 
 track_res_age_age %>% dplyr::filter(is.na(median_age)) %>% janitor::tabyl(dist_m) %>% arrange(desc(n))
-
 ```
 
-```{r, Segment 2, fig.width = 10, fig.height = 4.5, fig.align = 'center', message = FALSE}
+    ##     dist_m n percent
+    ## 1  1998.11 7    0.35
+    ## 2   100.00 2    0.10
+    ## 3   800.00 2    0.10
+    ## 4  1500.00 2    0.10
+    ## 5   200.00 1    0.05
+    ## 6   400.00 1    0.05
+    ## 7  1500.11 1    0.05
+    ## 8  1609.00 1    0.05
+    ## 9  1609.11 1    0.05
+    ## 10 3000.00 1    0.05
+    ## 11 5000.00 1    0.05
+
+``` r
 # Diverging dot plot [top 3 per age group] by Selva Prabhakaran
 # http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html   
 plotfunc <- function(dist=100, subtitl_txt="", gender=c("M", "F"), sz = 28){
@@ -541,7 +767,11 @@ plotfunc <- function(dist=100, subtitl_txt="", gender=c("M", "F"), sz = 28){
                coord_flip()
 }
 plotfunc(100, "100 Meter: dot plot [top 3 per age group]", c("M", "F"))
+```
 
+<img src="SumTrack2018_files/figure-markdown_github/Segment 2-1.png" style="display: block; margin: auto;" />
+
+``` r
 p100 <- plotfunc(100, "100 Meter: Adults dot plot [top 3 per age group]", c("M", "F"))
 p100_M <- plotfunc(100, "100 Meter - Adult Males   : dot plot [top 3 per age group]", "M")
 p100_F <- plotfunc(100, "100 Meter - Adult Females : dot plot [top 3 per age group]", "F")
@@ -628,9 +858,23 @@ p1600_FG <- plotfunc_grade(1609, "1 Mile (1609m) - Adult Females : dot plot [top
     p100_Gs <- plotfunc_grade(100, "100 Meter - Adults dot plot [top 3 per age group]", sz = 16)
     p800_Gs <- plotfunc_grade(800, "800 Meter - Adults dot plot [top 3 per age group]", sz = 16)
     gridExtra::grid.arrange(p1600_s, p400_FGs, ncol = 2)
-    gridExtra::grid.arrange(p100_s, p800_Gs, ncol = 2)
-    gridExtra::grid.arrange(p100_s, p100_Gs, ncol = 2)
+```
 
+<img src="SumTrack2018_files/figure-markdown_github/Segment 2-2.png" style="display: block; margin: auto;" />
+
+``` r
+    gridExtra::grid.arrange(p100_s, p800_Gs, ncol = 2)
+```
+
+<img src="SumTrack2018_files/figure-markdown_github/Segment 2-3.png" style="display: block; margin: auto;" />
+
+``` r
+    gridExtra::grid.arrange(p100_s, p100_Gs, ncol = 2)
+```
+
+<img src="SumTrack2018_files/figure-markdown_github/Segment 2-4.png" style="display: block; margin: auto;" />
+
+``` r
 message("data check")
 milecheck_all <- track_res_all %>%
     dplyr::filter(Date_Meet == ymd('2018-08-01') & grepl("1", Event)) %>%
@@ -639,7 +883,59 @@ milecheck_all <- track_res_all %>%
     select(Name, Sex, Age, Event, dist_m, track_time, Place, Max_Hamlyn_pts)
 
 print(milecheck_all, n = nrow(milecheck_all))
+```
 
+    ## # A tibble: 22 x 8
+    ##    Name              Sex     Age Event           dist_m track_time Place
+    ##    <chr>             <chr> <dbl> <chr>            <dbl>      <dbl> <int>
+    ##  1 Roxanne Springer  F        54 1 Mile Run       1609         377     1
+    ##  2 Kaina Morey       F        17 1 Mile Run       1609         379     2
+    ##  3 Robin Richardson  F        48 1 Mile Run       1609         394     3
+    ##  4 Amy Cummings      F        44 1 Mile Run       1609         445     4
+    ##  5 Amy Lowman        F        41 1 Mile Run       1609         456     5
+    ##  6 Brendan Murray    M        30 1 Mile Run       1609         322     1
+    ##  7 Leif Rasmussen    M        15 1 Mile Run       1609         331     2
+    ##  8 Ted Richardson    M        48 1 Mile Run       1609         345     3
+    ##  9 Michael Fields    M        26 1 Mile Run       1609         349     4
+    ## 10 Nicholas Min      M        15 1 Mile Run       1609         350     5
+    ## 11 Kevin Nickodem    M        61 1 Mile Run       1609         350     5
+    ## 12 Brian Stull       M        47 1 Mile Run       1609         350     5
+    ## 13 Roxanne Springer  F        54 1 Mile Racewalk  1609.        582     1
+    ## 14 Deb Springer      F        44 1 Mile Racewalk  1609.        626     2
+    ## 15 Barbara Hindenach F        67 1 Mile Racewalk  1609.        682     3
+    ## 16 Kaina Morey       F        17 1 Mile Racewalk  1609.        702     4
+    ## 17 Robin Richardson  F        48 1 Mile Racewalk  1609.        727     5
+    ## 18 Leif Rasmussen    M        15 1 Mile Racewalk  1609.        580     1
+    ## 19 John Min          M        48 1 Mile Racewalk  1609.        661     2
+    ## 20 Tim O'Brien       M        66 1 Mile Racewalk  1609.        666     3
+    ## 21 Isaac Mathias     M        14 1 Mile Racewalk  1609.        677     4
+    ## 22 Brendan Murray    M        30 1 Mile Racewalk  1609.        705     5
+    ##    Max_Hamlyn_pts
+    ##             <dbl>
+    ##  1              5
+    ##  2              4
+    ##  3              3
+    ##  4              2
+    ##  5              1
+    ##  6              5
+    ##  7              4
+    ##  8              3
+    ##  9              2
+    ## 10              1
+    ## 11              1
+    ## 12              1
+    ## 13              5
+    ## 14              4
+    ## 15              3
+    ## 16              2
+    ## 17              1
+    ## 18              5
+    ## 19              4
+    ## 20              3
+    ## 21              2
+    ## 22              1
+
+``` r
 max_hamlyn <- track_res_all %>%
     group_by(Name) %>%
     mutate(Max_HamLyn_pts_total = sum(Max_Hamlyn_pts)) %>%
@@ -672,6 +968,11 @@ max_hamlyn_top10_F_plot <-
           plot.background = element_rect(fill = '#333333')) +
     coord_flip()
 print(max_hamlyn_top10_F_plot)
+```
+
+<img src="SumTrack2018_files/figure-markdown_github/Segment 2-5.png" style="display: block; margin: auto;" />
+
+``` r
 ggsave(max_hamlyn_top10_F_plot, filename=paste0("max_hamlyn_top10_F_2018", ".png"), width=11, height = 8)
 
 
@@ -700,6 +1001,11 @@ max_hamlyn_top10_M_plot <-
           plot.background = element_rect(fill = '#333333')) +
     coord_flip()
 print(max_hamlyn_top10_M_plot)
+```
+
+<img src="SumTrack2018_files/figure-markdown_github/Segment 2-6.png" style="display: block; margin: auto;" />
+
+``` r
 ggsave(max_hamlyn_top10_M_plot, filename=paste0("max_hamlyn_top10_M_2018", ".png"), width=11, height = 8)
 
 
