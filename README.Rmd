@@ -45,7 +45,8 @@ plot(mtcars_lm)
 track_res <- read.csv('godiva_summer_track_res_2018.csv')
 track_res$Date_Meet <- ymd(track_res$Date_Meet)
 
-track_res <- track_res %>% group_by(Name) %>% arrange(Name, Date_Meet, ct_evt) %>%
+track_res <- track_res %>% group_by(Name) %>% 
+               arrange(Name, Date_Meet, ct_evt) %>%
                mutate(EventNum = row_number()) %>% 
                group_by(Name, Date_Meet) %>%
                mutate(EventDay = row_number()) %>%
@@ -143,7 +144,7 @@ ggplot(track_res_base_complete_100_fast, aes(x = Predicted, y = track_time)) +
          subtitle = "CGTC 100 meters (2018) - times under 28 seconds")
 ```
 
-###### We might pursue more adjustments, dropping insignificant predictors, and possibly a different kind of model than a linear one. Of course, this also illustrates the importance of checking the statistical assumptions first, as Dr. Frank Harrell cautions - and surely this extends beyond machine learning.
+###### We might pursue more adjustments, dropping insignificant predictors, and possibly a different kind of model than a linear one. Of course, this also illustrates the importance of checking the statistical assumptions first, as Dr. Frank Harrell cautions - and this extends beyond machine learning.
 ![Assumptions caution from statistician Frank Harrell](assumptions_frank_harrell.jpg)
 
 ```{r tweetURL, warning = FALSE, error = FALSE, message = FALSE, echo = FALSE, tidy = FALSE}
