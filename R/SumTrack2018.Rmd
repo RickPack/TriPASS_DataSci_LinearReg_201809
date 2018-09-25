@@ -1,3 +1,8 @@
+---
+output: github_document
+---
+
+```{r, Segment 1, fig.width = 10, fig.height = 4.5, fig.align = 'center', message = FALSE}
 # World Masters Athletics (WMA) Age-graded track tables can be found on
 # Howard Grubb's website:
 # http://www.howardgrubb.co.uk/athletics/data/wavacalc06.xls
@@ -8,34 +13,44 @@ library(tidyr)
 library(readxl)
 library(lubridate)
 library(patchwork)
+library(stringr)
+library(ggplot2)
 
-setwd('C:/Users/Packr1/Documents/Personal/Track')
-WMA_Women <- read_xls('wavacalc06.xls', sheet = 1) %>%
+WMA_Women <- read_xls('C:/Users/Packr1/Documents/Personal/Track/wavacalc06.xls', sheet = 1) %>%
               select(2:ncol(.)) %>%
-              mutate(dist_m = case_when(
-                  grepl("WALK",  toupper(Event)) ~ (1000 * `dist(km)`) + 0.11,
-                  TRUE ~ 1000 * `dist(km)`)) %>%
-              mutate(Sex = 'F') %>%
-              # dist_m is 0 for field events 
-              # Unknown functional difference between Road distinctions
-              #   (e.g., 5kmRoad vs. 5km)
-              dplyr::filter(dist_m > 0 & 
-                            !grepl('Road', Event))
-              print(nrow(WMA_Women) - nrow(WMA_Women %>% distinct(dist_m)))
-              message("Expecting 0 s=> duplicate distance")
-WMA_Men   <- read_xls('wavacalc06.xls', sheet = 2) %>%
+                mutate(`dist(km)_2` = case_when( 
+                    grepl('1500MWALK', toupper(Event)) ~ 1.5,
+                    grepl('1MILEWALK', toupper(Event)) ~ 1.609,
+                    grepl('MWALK', toupper(Event)) ~ as.numeric(str_extract(Event, "[\\d]*")) + 0.11,
+                    TRUE ~ (`dist(km)`)),
+                    dist_m = case_when(
+                        grepl("WALK",  toupper(Event)) ~ ((1000 * `dist(km)_2`) + 0.11),
+                        TRUE ~ 1000 * `dist(km)_2`)) %>%
+                mutate(Sex = 'F') %>%
+                # dist(km)_2 is 0 for field events and "Mar.Walk" events
+                # Unknown functional difference in events containing "Road"
+                #   (e.g., 5kmRoad vs. 5km)
+                dplyr::filter(`dist(km)_2` > 0 & 
+                                !grepl('Road', Event))
+print(nrow(WMA_Women) - nrow(WMA_Women %>% distinct(Event, dist_m)))
+message("Expecting 0 so no duplicate distance")
+
+WMA_Men   <- read_xls('C:/Users/Packr1/Documents/Personal/Track/wavacalc06.xls', sheet = 2) %>%
               select(2:ncol(.)) %>%
-              mutate(dist_m = case_when(
-                grepl("WALK",  toupper(Event)) ~ (1000 * `dist(km)`) + 0.11,
-                TRUE ~ 1000 * `dist(km)`)) %>%
-              mutate(Sex = 'M') %>%
-              # dist_m is 0 for field events 
-              # Unknown functional difference between Road distinctions
-              #   (e.g., 5kmRoad vs. 5km)
-              dplyr::filter(dist_m > 0 & 
-                            !grepl('Road', Event))
-              print(nrow(WMA_Men) - nrow(WMA_Men %>% distinct(dist_m)))
-              message("Expecting 0 so no duplicate distance")
+                mutate(`dist(km)_2` = case_when( 
+                            grepl('1500MWALK', toupper(Event)) ~ 1.5,
+                            grepl('1MILEWALK', toupper(Event)) ~ 1.609,
+                            grepl('MWALK', toupper(Event)) ~ as.numeric(str_extract(Event, "[\\d]*")) + 0.11,
+                            TRUE ~ (`dist(km)`)),
+                       dist_m = case_when(
+                            grepl("WALK",  toupper(Event)) ~ ((1000 * `dist(km)_2`) + 0.11),
+                            TRUE ~ 1000 * `dist(km)_2`)) %>%
+                mutate(Sex = 'M') %>%
+                # dist(km)_2 is 0 for field events and "Mar.Walk" events
+                # Unknown functional difference in events containing "Road"
+                #   (e.g., 5kmRoad vs. 5km)
+                dplyr::filter(`dist(km)_2` > 0 & 
+                                  !grepl('Road', Event))
 
 # not including results labeled "All Comers Track Meet" (different appearance)
 # evt_list <- c('https://www.carolinagodiva.org/raceresults/track2000_05_24.html',
@@ -261,7 +276,7 @@ weather_2018_ht <- read_html('https://www.carolinagodiva.org/index.php?page=trac
 temps_2018      <- weather_2018_ht %>% html_nodes(xpath="//tr[(((count(preceding-sibling::*) + 1) = 12) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 11) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 10) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 9) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 8) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 7) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 6) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 5) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 4) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span | //tr[(((count(preceding-sibling::*) + 1) = 3) and parent::*)]//td[(((count(preceding-sibling::*) + 1) = 2) and parent::*)]//span") %>% 
     html_text() %>%
     as.numeric()
-# write.csv(temps_2018, "C:/Users/Packr1/Documents/Personal/Track/temps_2018.csv", row.names = FALSE)
+# write.csv(temps_2018, "temps_2018.csv", row.names = FALSE)
 
 track_res <- data.frame()
 p_list    <- list()
@@ -283,9 +298,9 @@ print(paste0(evt, " : ", dtvar))
 dat1_events <- dat1 %>% html_nodes("strong") %>% html_text() %>% tbl_df(.) %>% distinct(value) %>% mutate(ct_evt = row_number() * 1000) %>%
     rename(Name = value)
 # for local save when needed
-# write.csv(dat1_events, paste0("C:/Users/Packr1/Documents/Personal/Track/Godiva_Summer_", evt, "_Events.csv"))
+# write.csv(dat1_events, paste0("Godiva_Summer_", evt, "_Events.csv"))
 # For local read when needed (comment out lines above to start of for loop)
-# dat1_events <- read.csv(paste0("C:/Users/Packr1/Documents/Personal/Track/Godiva_Summer_", evt, "_Events.csv"))
+# dat1_events <- read.csv(paste0("Godiva_Summer_", evt, "_Events.csv"))
 # 
 dat2 <- dat1 %>% html_nodes("td") %>% html_text()
 
@@ -307,9 +322,9 @@ for(o in 1:rowct){
     dat3 <- bind_rows(dat3, infrm)
 }
 # For local save when needed
-  write.csv(dat3, paste0("C:/Users/Packr1/Documents/Personal/Track/Godiva_Summer_", evt, ".csv"), row.names = FALSE)
+# write.csv(dat3, paste0("Godiva_Summer_", evt, ".csv"), row.names = FALSE)
 # For local read when needed (comment out lines above to start of for loop)
-# dat3 <- read.csv(paste0("C:/Users/Packr1/Documents/Personal/Track/Godiva_Summer_", evt, ".csv"))
+# dat3 <- read.csv(paste0("Godiva_Summer_", evt, ".csv"))
 
 
 dat1_events2 <- dat1_events %>% rename(Event = Name)
@@ -333,28 +348,23 @@ dat4 <- left_join(dat3, dat1_events, by = "Name") %>%
     dplyr::filter(!is.na(secs) & secs != "?" & !is.na(Age)) %>%
     mutate(track_time = (60 * as.numeric(mins)) + as.numeric(secs),
            temp_dist  = str_extract(Event, "^([^ \t]+)"),
-           dist_m    = case_when(
-               str_detect(temp_dist, "k") ~ as.numeric(str_extract(Event, "(\\d)+")),
+           dist_m0    = case_when(
+               str_detect(toupper(Event), "K RUN") ~ as.numeric(str_extract(Event, "(\\d)+")) * 1000,
                str_detect(temp_dist, "Mile") & !is.na(as.numeric(str_extract(Event, "(\\d)+"))) ~
-                                            as.numeric(str_extract(Event, "(\\d)+")) * 1609,
+                   as.numeric(str_extract(Event, "(\\d)+")) * 1609,
                # No number found for Mile then assume 1 mile
                str_detect(Event, "Mile") ~ 1609,
-               TRUE ~ as.numeric(temp_dist))) %>%
-    # to make Max Hamlyn special 200.2 m into 200m
-    mutate(dist_m = round(dist_m)) %>%
-    dplyr::filter(!is.na(track_time)) %>%
-    group_by(Event, Sex) %>%
-    arrange(track_time) %>%
-    mutate(Place = dense_rank(track_time),
-           Max_Hamlyn_pts = case_when(
-               Place == 1 ~ 5,
-               Place == 2 ~ 4,
-               Place == 3 ~ 3,
-               Place == 4 ~ 2,
-               Place == 5 ~ 1,
-               TRUE ~ 0),
+               # to make Max Hamlyn special 200.2 m into 200m
+               str_detect(Event, "200.2") ~ 200,
+               TRUE ~ as.numeric(temp_dist)),
+           dist_m    = case_when(
+               # Adding a bit of distance for Walks, to differentiate
+               # in join with the age-graded tables
+               grepl("WALK", toupper(Event)) ~ dist_m0 + 0.11,
+               TRUE ~ dist_m0),
            Date_Meet = dtvar,
            Age = as.numeric(Age)) %>%
+    dplyr::filter(!is.na(track_time)) %>%
     mutate(agegrp = case_when(
         Age < 30 ~ "Age < 30",
         Age < 35 ~ "Age 30 - 34",
@@ -382,26 +392,56 @@ p1 <- ggplot(dat4, aes(Place, track_time)) +
             subtitle = dtvar)
 p_list[[evt]] <- p1
 }
-# write.csv(track_res, "C:/Users/Packr1/Documents/Personal/Track/godiva_summer_track_res_2018.csv", row.names = FALSE)
-track_res <- read_csv('C:/Users/Packr1/Documents/Personal/Track/godiva_summer_track_res_2018.csv') %>%
-            # Adding a bit of distance for Walks, to differentiate
-            # in join with the age-graded tables
-            mutate(dist_m = case_when(
-                grepl("WALK", toupper(Event)) ~ as.integer(dist_m + 0.11),
-                TRUE ~ dist_m))
-track_res %>% group_by(Name, Sex, Event, Date_Meet) %>% 
-         summarise(ct = n()) %>% dplyr::filter(ct > 1) %>% ungroup()
-track_res %>% dplyr::filter(str_trim(Name) == 'Brendan Murray' & str_trim(toupper(Event)) == '5K RUN')
-track_res <- track_res %>% dplyr::filter(!is.na(Age)) %>%
-    distinct(Name, Sex, Event, Date_Meet, .keep_all = TRUE)
-track_res <- track_res %>% dplyr::filter(!is.na(agegrp)) %>%
-              # Age-graded track tables start at age 4
-              dplyr::filter(Age > 4) 
-              
-m_ages_l <- length(unique(track_res %>% dplyr::filter(Sex=='M') %>% pull(Age)))
-f_ages_l <- length(unique(track_res %>% dplyr::filter(Sex=='F') %>% pull(Age)))
-m_ages <- unique(track_res %>% dplyr::filter(Sex=='M') %>% pull(Age))
-f_ages <- unique(track_res %>% dplyr::filter(Sex=='F') %>% pull(Age))
+
+print(track_res %>% distinct(Event, dist_m) %>% arrange(dist_m))
+
+track_res %>% group_by(Name, Sex, dist_m, Event, Date_Meet) %>% 
+    mutate(ct = n()) %>% dplyr::filter(ct > 1) %>% ungroup()
+
+track_res2 <- track_res %>% group_by(Name, Sex, dist_m, Event, Date_Meet) %>% 
+             mutate(rownum = row_number()) %>% 
+             ungroup() %>%
+             dplyr::filter(rownum == 1) %>%
+             group_by(Event, Sex) %>%
+             arrange(track_time) %>%
+             mutate(Place = dense_rank(track_time),
+                    Max_Hamlyn_pts = case_when(
+                       Place == 1 ~ 5,
+                       Place == 2 ~ 4,
+                       Place == 3 ~ 3,
+                       Place == 4 ~ 2,
+                       Place == 5 ~ 1,
+                       TRUE ~ 0)) %>%
+            ungroup()
+message("expecting 0")
+nrow(track_res2) - nrow(track_res %>% distinct(Name, Sex, Event, Date_Meet, .keep_all = TRUE))
+
+# write.csv(track_res2, "godiva_summer_track_res_2018.csv", row.names = FALSE)
+# track_res2 <- read_csv("godiva_summer_track_res_2018.csv")
+track_res2 %>%
+    dplyr::filter(grepl("LEIF", toupper(Name))) %>%
+    arrange(Date_Meet, ct_evt) %>%
+    select(Name, Sex, Age, Date_Meet, Event, dist_m, ct_evt, Date_Meet, Max_Hamlyn_pts) %>%
+    dplyr::filter(Max_Hamlyn_pts > 0) %>%
+    print(tbl_df(.), n = nrow(track_res))
+
+milecheck <- track_res2 %>% 
+    dplyr::filter(Date_Meet == ymd('2018-08-01') & grepl("1", Event)) %>% 
+    arrange(dist_m, Event) %>% 
+    dplyr::filter(Max_Hamlyn_pts > 0 )
+print(milecheck, n = nrow(milecheck))
+
+track_res_noage <- track_res2 %>% 
+                     # Age-graded track tables start at age 4
+                     dplyr::filter(is.na(Age) | Age <= 4)
+track_res_noage %>% janitor::tabyl(Age)
+track_res_age   <- anti_join(track_res2, track_res_noage %>% select(Name, Sex, Event, Date_Meet), 
+                             by = c('Name', 'Sex', 'Event', 'Date_Meet'))
+
+m_ages_l <- length(unique(track_res_age %>% dplyr::filter(Sex=='M') %>% pull(Age)))
+f_ages_l <- length(unique(track_res_age %>% dplyr::filter(Sex=='F') %>% pull(Age)))
+m_ages <- unique(track_res_age %>% dplyr::filter(Sex=='M') %>% pull(Age))
+f_ages <- unique(track_res_age %>% dplyr::filter(Sex=='F') %>% pull(Age))
 dat_m1 <- data.frame()
 dat_f1 <- data.frame()
 
@@ -412,7 +452,7 @@ for(m_age in 1:m_ages_l){
     m_age_nam  <- sym(as.character(m_age_in))
     WMA_Men_in <- WMA_Men %>% mutate(agefactor := !!m_age_nam) %>%
                     select(agefactor, dist_m, Sex)
-      dat_m1_0 <- track_res %>% dplyr::filter(Age == m_age_in) %>%
+      dat_m1_0 <- track_res_age %>% dplyr::filter(Age == m_age_in) %>%
                      inner_join(., WMA_Men_in, by = c("Sex", "dist_m")) %>%
                      mutate(age_grade_track_time = track_time * agefactor) %>%
                      select(Name, Sex, Date_Meet, dist_m, age_grade_track_time, agefactor)
@@ -425,7 +465,7 @@ for(f_age in 1:f_ages_l){
     f_age_nam  <- sym(as.character(f_age_in))
     WMA_Women_in <- WMA_Women %>% mutate(agefactor := !!f_age_nam) %>%
                      select(agefactor, dist_m, Sex)
-      dat_f1_0 <- track_res %>% dplyr::filter(Age == f_age_in) %>%
+      dat_f1_0 <- track_res_age %>% dplyr::filter(Age == f_age_in) %>%
                      inner_join(., WMA_Women_in, by = c("Sex", "dist_m")) %>%
                      mutate(age_grade_track_time = track_time * agefactor) %>%
                      select(Name, Sex, Date_Meet, dist_m, age_grade_track_time, agefactor)
@@ -433,10 +473,8 @@ for(f_age in 1:f_ages_l){
 }
 
 dat_all <- bind_rows(dat_m1, dat_f1)
-track_res_all <- left_join(track_res, dat_all, by = c("Name", "Sex", "Date_Meet", "dist_m"))
-
-track_res_all <- track_res_all %>% dplyr::filter(!is.na(agegrp)) %>%
-                    arrange(track_time) 
+track_res_all <- left_join(track_res_age, dat_all, by = c("Name", "Sex", "Date_Meet", "dist_m")) %>%
+                 bind_rows(., track_res_noage)
 
 track_res_age <- track_res_all %>%
     group_by(dist_m, agegrp) %>%
@@ -460,6 +498,9 @@ track_res_ind_age <- track_res_all %>%
 
 track_res_age_age %>% dplyr::filter(is.na(median_age)) %>% janitor::tabyl(dist_m) %>% arrange(desc(n))
 
+```
+
+```{r, Segment 2, fig.width = 10, fig.height = 4.5, fig.align = 'center', message = FALSE}
 # Diverging dot plot [top 3 per age group] by Selva Prabhakaran
 # http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html   
 plotfunc <- function(dist=100, subtitl_txt="", gender=c("M", "F"), sz = 28){
@@ -467,6 +508,7 @@ plotfunc <- function(dist=100, subtitl_txt="", gender=c("M", "F"), sz = 28){
     track_res_all_top3age <-
         track_res_all %>%
         dplyr::filter(Sex %in% gender & dist_m == dist) %>%
+        dplyr::filter(!is.na(agegrp)) %>%
         group_by(Name) %>%
         slice(which.min(track_time)) %>%
         group_by(agegrp) %>%
@@ -475,9 +517,6 @@ plotfunc <- function(dist=100, subtitl_txt="", gender=c("M", "F"), sz = 28){
         ungroup() %>%
         arrange(track_time)
     
-    # track_res_all_top3age <- within(track_res_all_top3age, 
-    #                                 Name2 <- factor(Name, 
-    #                                                 levels=names(sort(track_time))))
     ggplot(track_res_all_top3age, aes(x = reorder(Name, desc(track_time)), y = track_time)) +
                geom_point(stat='identity', aes(col=agegrp), size = 6) +
                scale_color_viridis_d(name='Age Group') +
@@ -513,10 +552,11 @@ p1600_M <- plotfunc(1609, "1 Mile (1609m) - Adult Males   : dot plot [top 3 per 
 p1600_F <- plotfunc(1609, "1 Mile (1609m) - Adult Females : dot plot [top 3 per age group]", "F")
 
 plotfunc_grade <- function(dist=100, subtitl_txt="", gender=c("M", "F"), sz = 28){
-    
     track_res_all_top3age_grade <-
         track_res_all %>%
         dplyr::filter(Sex %in% gender & dist_m == dist) %>%
+        dplyr::filter(!is.na(agegrp)) %>%
+        dplyr::filter(!is.na(age_grade_track_time)) %>%
         group_by(Name) %>%
         slice(which.min(track_time)) %>%
         group_by(agegrp) %>%
@@ -558,7 +598,7 @@ p1600_MG <- plotfunc_grade(1609, "1 Mile (1609m) - Adult Males   : dot plot [top
 p1600_FG <- plotfunc_grade(1609, "1 Mile (1609m) - Adult Females : dot plot [top 3 per age group]", "F")
 
     ggs <- function(grph, grphout){
-       ggsave(grph, filename=paste0("C:/Users/Packr1/Documents/Personal/Track/Graphs/", grphout, ".png"), width=11, height = 8)
+       ggsave(grph, filename=paste0(grphout, ".png"), width=11, height = 8)
     }
     ggs(p100, "p100")
     ggs(p100_F, "p100_F")
@@ -587,7 +627,16 @@ p1600_FG <- plotfunc_grade(1609, "1 Mile (1609m) - Adult Females : dot plot [top
     gridExtra::grid.arrange(p1600_s, p400_FGs, ncol = 2)
     gridExtra::grid.arrange(p100_s, p800_Gs, ncol = 2)
     gridExtra::grid.arrange(p100_s, p100_Gs, ncol = 2)
-    
+
+message("data check")
+milecheck_all <- track_res_all %>%
+    dplyr::filter(Date_Meet == ymd('2018-08-01') & grepl("1", Event)) %>%
+    arrange(dist_m, Event, Sex, track_time) %>%
+    dplyr::filter(Max_Hamlyn_pts > 0 ) %>%
+    select(Name, Sex, Age, Event, dist_m, track_time, Place, Max_Hamlyn_pts)
+
+print(milecheck_all, n = nrow(milecheck_all))
+
 max_hamlyn <- track_res_all %>%
     group_by(Name) %>%
     mutate(Max_HamLyn_pts_total = sum(Max_Hamlyn_pts)) %>%
@@ -596,7 +645,8 @@ max_hamlyn <- track_res_all %>%
     mutate(Name = paste0(Name, " (", Age, ")"))
 
 max_hamlyn_top10_F <- max_hamlyn %>% dplyr::filter(Sex=='F') %>% top_n(10, Max_HamLyn_pts_total)
-ggplot(max_hamlyn_top10_F, 
+max_hamlyn_top10_F_plot <- 
+    ggplot(max_hamlyn_top10_F, 
        aes(x = reorder(Name, Max_HamLyn_pts_total), y = Max_HamLyn_pts_total)) +
     geom_point(stat='identity', aes(col=agegrp), size = 6) +
     scale_color_viridis_d(name='Age Group') +
@@ -618,9 +668,13 @@ ggplot(max_hamlyn_top10_F,
           strip.background = element_rect(fill = '#333333'),
           plot.background = element_rect(fill = '#333333')) +
     coord_flip()
+print(max_hamlyn_top10_F_plot)
+ggsave(max_hamlyn_top10_F_plot, filename=paste0("max_hamlyn_top10_F_2018", ".png"), width=11, height = 8)
+
 
 max_hamlyn_top10_M <- max_hamlyn %>% dplyr::filter(Sex=='M') %>% top_n(10, Max_HamLyn_pts_total)
-ggplot(max_hamlyn_top10_M, 
+max_hamlyn_top10_M_plot <-
+    ggplot(max_hamlyn_top10_M, 
        aes(x = reorder(Name, Max_HamLyn_pts_total), y = Max_HamLyn_pts_total)) +
     geom_point(stat='identity', aes(col=agegrp), size = 6) +
     scale_color_viridis_d(name='Age Group') +
@@ -642,37 +696,42 @@ ggplot(max_hamlyn_top10_M,
           strip.background = element_rect(fill = '#333333'),
           plot.background = element_rect(fill = '#333333')) +
     coord_flip()
-
-ken <- track_res_all %>% dplyr::filter(Name=='Ken Larsen') 
-
-# ggrepel
-ggplot(data=ken, aes( x = ymd(Date_Meet), y = track_time, color = dist_m, group = dist_m)) +
-    geom_line() +
-    scale_colour_viridis_c() +
-    theme_classic() +
-    xlab("Date of Meet") +
-    ylab("Run time (seconds)")
-
-ggplot(data=ken, aes( x = ymd(Date_Meet), y = track_time, color = dist_m, group = dist_m)) +
-    geom_line() +
-    scale_colour_viridis_c() +
-    theme_classic() +
-    xlab("Date of Meet") +
-    ylab("Run time (seconds)")
-
-# ken %>% dplyr::filter(Date_Meet=='2018-07-18') %>% tidyr::spread(., dist_m, track_time)
+print(max_hamlyn_top10_M_plot)
+ggsave(max_hamlyn_top10_M_plot, filename=paste0("max_hamlyn_top10_M_2018", ".png"), width=11, height = 8)
 
 
-ken_col_events <- 
-    ken %>% select(Date_Meet, Name, dist_m, track_time) %>% 
-    tidyr::spread(., dist_m, track_time)
-ken_col_events
-
-
-ken_col_events$seq_event_grp <- rep(1:2, length.out = max(floor(nrow(ken_col_events)), nrow(ken_col_events)))
-ken_col_events2 <- ken_col_events %>%
-    group_by(seq_event_grp) %>%
-    unite(short, "100", "200") %>%
-    unite(med, "400", "800") %>%
-    unite(long, "1500", "1609") %>%
-    select(Name, Date_Meet, short, med, long)
+## AWAITING FUTURE WORK
+# ken <- track_res_all %>% dplyr::filter(Name=='Ken Larsen') 
+# 
+# # ggrepel
+# ggplot(data=ken, aes( x = ymd(Date_Meet), y = track_time, color = dist_m, group = dist_m)) +
+#     geom_line() +
+#     scale_colour_viridis_c() +
+#     theme_classic() +
+#     xlab("Date of Meet") +
+#     ylab("Run time (seconds)")
+# 
+# ggplot(data=ken, aes( x = ymd(Date_Meet), y = track_time, color = dist_m, group = dist_m)) +
+#     geom_line() +
+#     scale_colour_viridis_c() +
+#     theme_classic() +
+#     xlab("Date of Meet") +
+#     ylab("Run time (seconds)")
+# 
+# # ken %>% dplyr::filter(Date_Meet=='2018-07-18') %>% tidyr::spread(., dist_m, track_time)
+# 
+# 
+# ken_col_events <- 
+#     ken %>% select(Date_Meet, Name, dist_m, track_time) %>% 
+#     tidyr::spread(., dist_m, track_time)
+# ken_col_events
+# 
+# 
+# ken_col_events$seq_event_grp <- rep(1:2, length.out = max(floor(nrow(ken_col_events)), nrow(ken_col_events)))
+# ken_col_events2 <- ken_col_events %>%
+#     group_by(seq_event_grp) %>%
+#     unite(short, "100", "200") %>%
+#     unite(med, "400", "800") %>%
+#     unite(long, "1500", "1609") %>%
+#     select(Name, Date_Meet, short, med, long)
+```
