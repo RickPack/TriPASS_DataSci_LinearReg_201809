@@ -233,8 +233,4 @@ ggplot(track_res_base_complete, aes(x = Predicted, y = track_time)) +
 
 ![](README_files/figure-markdown_github/100m_lm3-1.png)
 
-###### We might pursue more adjustments, dropping insignificant predictors, and possibly a different kind of model than a linear one. Of course, this also illustrates the importance of checking the statistical assumptions first, as Dr. Frank Harrell cautions - and surely this extends beyond machine learning.
-
-![Assumptions caution from statistician Frank Harrell](assumptions_frank_harrell.jpg)
-
-    ## [1] "https://twitter.com/f2harrell/status/1043871065498357760?s=12"
+###### This illustrates the importance of checking the statistical assumptions first ######
